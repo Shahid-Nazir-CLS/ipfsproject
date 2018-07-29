@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+
+<html lang="en" class="no-js">
+    <!-- BEGIN HEAD -->
+    <head>
+        <meta charset="utf-8"/>
+        <title>Crypto Vote</title>
+
+        <!-- GLOBAL MANDATORY STYLES -->
+
+        <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        
+        <!-- Web3 Library -->
+        <script src="js/web3.min.js"></script>
+
+        
+        <!-- THEME STYLES -->
+        <link href="css/layout.min.css" rel="stylesheet" type="text/css"/>
+
+    </head>
+    <!-- END HEAD -->
+
+
+    <!-- BODY -->
+    <body>
+
+        <!--========== HEADER ==========-->
+        <header class="header navbar-fixed-top">
+            <!-- Navbar -->
+            <nav class="navbar" role="navigation">
+                <div class="container">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="menu-container">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="toggle-icon"></span>
+                        </button>
+
+                        <!-- Logo -->
+                        <div class="logo">
+                            <a class="logo-wrap" href="index.html">
+                                <img class="logo-img logo-img-main" src="img/logo.png" alt="Asentus Logo">
+                                <img class="logo-img logo-img-active" src="img/logo-dark.png" alt="Asentus Logo">
+                            </a>
+                        </div>
+                        <!-- End Logo -->
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse nav-collapse">
+                        <div class="menu-container">
+                            <ul class="navbar-nav navbar-nav-right">
+                                <li class="nav-item"><a class="nav-item-child nav-item-hover" href="index.html">Home</a></li>
+                                <li class="nav-item"><a class="nav-item-child nav-item-hover" href="election.html">Election</a></li>
+                                <li class="nav-item"><a class="nav-item-child nav-item-hover" href="prevElections.html">Previous Election</a></li>
+                                <li class="nav-item"><a class="nav-item-child nav-item-hover" href="about.html">Team</a></li>
+                                <li class="nav-item"><a class="nav-item-child nav-item-hover" href="contact.html">Contact</a></li>
+                                <li class="nav-item"><a class="nav-item-child nav-item-hover active" href="admin.html" id="adminbtn">Admin</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- End Navbar Collapse -->
+                </div>
+            </nav>
+            <!-- Navbar -->
+        </header>
+        <!--========== END HEADER ==========-->
+        
+        <!--========== END PAGE LAYOUT ==========-->
+
+        <!--========== FOOTER ==========-->
+        <footer class="footeradm">
+            <!-- Links -->
+            <!-- <div class="footer-seperator"> -->
+                <div class="content-lg container">
+                    <!-- <div class="row"> -->
+                        
+                        
+                        <h2 class="carousel-title">Adminstrators Page</h2>
+
+
+                        <!-- testing -->
+						<div id="adminControls" align="right">
+
+                        <form id="regForm" action="">
+
+							
+
+							<!-- One "tab" for each step in the form: -->
+
+							<div class="tab">
+								<h1>Welcome to Adminstrators page</h1>
+							  
+
+								<button type="submit" class="btn-theme btn-theme-sm btn-base-bgadm text-uppercase" id="reset">Reset Previous Election</button>
+								<button type="button" class="btn-theme btn-theme-sm btn-base-bgadm text-uppercase" id="store">Store Previous Election</button>
+							    <button type="button" class="btn-theme btn-theme-sm btn-base-bgadm text-uppercase" id="nextBtn" onclick="gotoelect()">Create New Election</button>
+							</div>
+
+
+
+						</form>
+						</div>
+
+						<script>
+							
+							var currentTab = 0; // Current tab is set to be the first tab (0)
+							showTab(currentTab); // Display the current tab
+
+							function showTab(n) {
+							  // This function will display the specified tab of the form ...
+							  var x = document.getElementsByClassName("tab");
+							  x[n].style.display = "block";
+
+							}
+
+							function gotoelect() {
+							  window.location.href = "createelect.html"; 
+							}
+
+						</script>
+            </div>
+            <!-- End Links -->
+
+            <!-- Copyright -->
+            <div class="content container">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <img class="footer-logo" src="img/logo.png" alt="Asentus Logo">
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p style="color:white">© Crypto Vote 2018-2019<p>
+                    </div>
+                </div>
+                <!--// end row -->
+            </div>
+            <!-- End Copyright -->
+        </footer>
+        <!--========== END FOOTER ==========-->
+
+        <!-- JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
+        <!-- CORE PLUGINS -->
+        <script src="vendor/jquery.min.js" type="text/javascript"></script>
+        <script src="vendor/jquery-migrate.min.js" type="text/javascript"></script>
+        <script src="vendor/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+
+        <!-- PAGE LEVEL SCRIPTS -->
+        <script src="js/layout.min.js" type="text/javascript"></script>
+
+        <!-- Web3 controls
+        Communicating with smart contract -->
+        <script>
+
+        	// If web3 is not undefined, then we'll use that as our provider. 
+			// If it's undefined (else), we can manually specify the provider ourselves. 
+	       	if (typeof web3 !== 'undefined') {
+	            web3 = new Web3(web3.currentProvider);
+	        } else {
+	            // set the provider you want from Web3.providers
+	            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+	        }
+
+	        // We have to specify a default ethereum account to use 
+	        // through the web3.eth.defaultAccount method:
+	        web3.eth.defaultAccount = web3.eth.accounts[0];
+
+	        //  Set up the contract ABI so the app knows what functions are available for this contract.
+	        // This ABI allows you to call functions and receive data from your smart contract.
+			var VotesContract = web3.eth.contract([
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_candidateName",
+				"type": "string"
+			}
+		],
+		"name": "removeCandidate",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getCandCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "voterpubkeys",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "x",
+				"type": "uint256"
+			}
+		],
+		"name": "getPrevElections",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_candidateName",
+				"type": "string"
+			},
+			{
+				"name": "_symbol",
+				"type": "string"
+			}
+		],
+		"name": "addCandidate",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "getCandidate",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getvoters",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "abstain",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "resetCandidates",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_pubkey",
+				"type": "address"
+			}
+		],
+		"name": "removeVoter",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "pos",
+				"type": "uint256"
+			},
+			{
+				"name": "i",
+				"type": "uint256"
+			}
+		],
+		"name": "getprevElectionResults",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "message",
+				"type": "bytes32"
+			},
+			{
+				"name": "sig",
+				"type": "bytes"
+			}
+		],
+		"name": "recoverSigner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTest",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getElectionTime",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getElectionsCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "msg",
+				"type": "bytes32"
+			},
+			{
+				"name": "sign",
+				"type": "bytes"
+			}
+		],
+		"name": "checkOwner",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "addPrevElection",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getNonce",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "msg",
+				"type": "bytes32"
+			},
+			{
+				"name": "sign",
+				"type": "bytes"
+			}
+		],
+		"name": "checkPass",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "p",
+				"type": "uint256"
+			}
+		],
+		"name": "getElectionCandCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getElectionParameters",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_electionStartTime",
+				"type": "string"
+			}
+		],
+		"name": "setElectionStartTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "pubkey",
+				"type": "address"
+			}
+		],
+		"name": "addVoter",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_electionName",
+				"type": "string"
+			},
+			{
+				"name": "_duration",
+				"type": "string"
+			}
+		],
+		"name": "setElectionParameters",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_cand",
+				"type": "string"
+			}
+		],
+		"name": "vote",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [],
+		"name": "VoteEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "valid",
+				"type": "string"
+			}
+		],
+		"name": "PassEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "validowner",
+				"type": "string"
+			}
+		],
+		"name": "PassEventOwner",
+		"type": "event"
+	}
+]);
+
+
+	        // Set up the address of the contract with MyContract.at().
+	        // The important thing to know is that MyContract.at() returns the instance.
+	        var Votes = VotesContract.at('0xdaa7ab9ac068ba19dc3a99e2d1ff452d72b01484');
+	        var votesEvent = Votes.VoteEvent();
+
+			
+			// time admin controls
+        	// time admin controls
+        	Votes.getElectionTime((err, res) => {
+                   if (!err) {
+                        
+                        // disbale admin controls
+                        document.getElementById("adminbtn").setAttribute('href', "#");
+
+
+                        var d = new Date(res[0]);
+
+
+                        var c = new Date();
+
+                        var diff = (Math.floor(c.getTime() / 1000) - (d.getTime() / 1000));
+
+                        var rem = (60 * res[1]) - diff;
+
+
+
+                        var seconds = rem;
+
+                    // Update the count down every 1 second
+                        var x = setInterval(function() {
+                            
+                            
+                            // If the count down is over, write some text 
+                            if (seconds < 0) {
+                                clearInterval(x);
+                                // document.getElementById("adminbtn").setAttribute('href', "admin.html");
+                            }
+                        
+                            seconds--;
+                        }, 1000);
+
+                   }else
+                    console.log(err);
+                });
+
+
+			// reset
+	        $("#reset").click(function() {
+
+	            Votes.resetCandidates(function(err, res){
+	               if (err) {
+	                   console.log(err);
+	               }
+	            });
+	        });
+
+	        // store
+
+	        $("#store").click(function() {
+
+	            Votes.addPrevElection((err, res) => {
+	               if (err) {
+	                   console.log(err);
+	               }
+	            });
+	        });
+
+
+	        votesEvent.watch(function(err, res){
+	    		if(!err){
+	    			window.location.href = "election.html";
+	    		}else{
+	    			console.log(err);
+	    		}
+	    	});
+
+
+
+        </script>
+
+    </body>
+    <!-- END BODY -->
+</html>
